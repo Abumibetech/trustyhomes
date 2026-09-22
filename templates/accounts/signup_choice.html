@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Sign up — TrustyHomes{% endblock %}
+{% block extra_css %}
+<style>
+  .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+  @media (max-width:700px){ .choice-grid{grid-template-columns:1fr} }
+  .choice-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:28px;text-align:center;transition:.15s}
+  .choice-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .choice-icon{font-size:2.2rem;margin-bottom:10px}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:760px;text-align:center">
+    <span class="eyebrow">Join TrustyHomes</span>
+    <h1>How would you like to sign up?</h1>
+    <div class="choice-grid">
+      <a href="{% url 'accounts:signup_tenant' %}" class="choice-card reveal">
+        <div class="choice-icon">🔍</div>
+        <h3>I'm looking for a place</h3>
+        <p style="color:var(--ink-600)">Save favourites, request inspections, and review agents you deal with.</p>
+        <span class="btn btn-outline" style="margin-top:10px">Sign up as a tenant</span>
+      </a>
+      <a href="{% url 'accounts:signup_agent' %}" class="choice-card reveal">
+        <div class="choice-icon">🏠</div>
+        <h3>I'm an agent or property owner</h3>
+        <p style="color:var(--ink-600)">List your properties for free and reach verified tenants directly.</p>
+        <span class="btn btn-primary" style="margin-top:10px">Sign up to list properties</span>
+      </a>
+    </div>
+    <p style="margin-top:20px;color:var(--ink-600)">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% load humanize %}
+<div class="card-prop reveal">
+  <a href="{{ property.get_absolute_url }}" class="card-prop-link">
+    <div class="card-prop-media">
+      {% with img=property.main_image %}
+        {% if img and img.display_url %}
+          <img src="{{ img.display_url }}" alt="{{ property.title }}" loading="lazy">
+        {% else %}
+          <div class="no-img-fallback">
+            <svg viewBox="0 0 64 64" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 30L32 12l24 18v22a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V30z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M26 52V36h12v16" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+            <span>Photos coming soon</span>
+          </div>
+        {% endif %}
+      {% endwith %}
+      <div class="card-badges">
+        {% if property.is_verified %}<span class="badge badge-verified">✔ Verified</span>{% else %}<span class="badge badge-unverified">Unverified</span>{% endif %}
+        {% if property.is_featured %}<span class="badge badge-featured">★ Featured</span>{% endif %}
+      </div>
+    </div>
+    <div class="card-prop-body">
+      <div class="card-prop-price">₦{{ property.price|intcomma }} <small>/ {{ property.get_price_period_display }}</small></div>
+      <div class="card-prop-title">{{ property.title }}</div>
+      <div class="card-prop-meta">
+        <span>📍 {{ property.area }}</span>
+        {% if property.shows_room_counts %}
+          <span>🛏 {{ property.bedrooms }}</span>
+          <span>🚿 {{ property.bathrooms }}</span>
+        {% else %}
+          <span>{{ property.get_category_display }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'listings:toggle_favourite' property.slug %}" class="card-heart-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="heart-btn {% if favourite_ids and property.id in favourite_ids %}active{% endif %}" title="Save to favourites">♥</button>
+    </form>
+  {% endif %}
+</div>

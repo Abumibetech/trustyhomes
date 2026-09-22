@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Browse Properties — TrustyHomes{% endblock %}
+{% block extra_css %}
+<style>
+  .list-layout{display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start}
+  @media (max-width:900px){ .list-layout{grid-template-columns:1fr} }
+  .filter-panel{position:sticky;top:84px}
+  @media (max-width:900px){ .filter-panel{position:static} }
+  .filter-panel .form-row{margin-bottom:14px}
+  .filter-panel label{display:block;font-size:.82rem;font-weight:600;margin-bottom:5px;color:var(--ink-600)}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Browse</span>
+        <h2>{{ properties.count }} propert{{ properties.count|pluralize:"y,ies" }} found</h2>
+      </div>
+    </div>
+
+    <div class="list-layout">
+      <aside class="panel filter-panel">
+        <h3 style="margin-top:0">Filter</h3>
+        <form method="get" id="filterForm">
+          <div class="form-row">
+            <label>Keyword</label>
+            {{ form.keyword }}
+          </div>
+          <div class="form-row">
+            <label>Category</label>
+            {{ form.category }}
+          </div>
+          <div class="form-row">
+            <label>State</label>
+            {{ form.state }}
+          </div>
+          <div class="form-row">
+            <label>Area</label>
+            {{ form.area }}
+          </div>
+          <div class="form-row">
+            <label>Property type</label>
+            {{ form.property_type }}
+          </div>
+          <div class="form-row">
+            <label>Min budget (₦)</label>
+            {{ form.min_budget }}
+          </div>
+          <div class="form-row">
+            <label>Max budget (₦)</label>
+            {{ form.max_budget }}
+          </div>
+          <div class="form-row form-check">
+            {{ form.verified_only }}
+            <label style="margin:0" for="{{ form.verified_only.id_for_label }}">Verified listings only</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Apply filters</button>
+          <a href="{% url 'listings:property_list' %}" class="btn btn-ghost btn-block" style="margin-top:8px">Clear</a>
+        </form>
+        <datalist id="areaSuggestions"></datalist>
+        <datalist id="propertyTypeSuggestions"></datalist>
+      </aside>
+
+      <div>
+        {% include "listings/_ad_banner.html" %}
+        {% if properties %}
+          <div class="grid">
+            {% for property in properties %}
+              {% include "listings/_property_card.html" %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <h3>No properties match your filters</h3>
+            <p>Try widening your budget or choosing a different area.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const stateSelect = document.getElementById('id_state');
+  const areaSuggestions = document.getElementById('areaSuggestions');
+  const typeSuggestions = document.getElementById('propertyTypeSuggestions');
+
+  fetch(`{% url 'listings:load_property_type_suggestions' %}`)
+    .then(r => r.text()).then(html => { if (typeSuggestions) typeSuggestions.innerHTML = html; });
+
+  if (stateSelect && areaSuggestions) {
+    stateSelect.addEventListener('change', function () {
+      if (!this.value) { areaSuggestions.innerHTML = ''; return; }
+      fetch(`{% url 'listings:load_area_suggestions' %}?state=${this.value}`)
+        .then(r => r.text()).then(html => { areaSuggestions.innerHTML = html; });
+    });
+    if (stateSelect.value) stateSelect.dispatchEvent(new Event('change'));
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% if ads %}
+<div class="ad-banner-strip">
+  {% for ad in ads %}
+    <a href="{% url 'listings:ad_click' ad.id %}" class="ad-banner reveal" target="_blank" rel="noopener sponsored">
+      <img src="{{ ad.image.url }}" alt="{{ ad.advertiser_name }}" loading="lazy">
+      <span class="ad-tag">Ad</span>
+    </a>
+  {% endfor %}
+</div>
+{% endif %}

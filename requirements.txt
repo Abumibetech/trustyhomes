@@ -1,0 +1,12 @@
+Django==6.1.1
+gunicorn==23.0.0
+whitenoise==6.8.2
+dj-database-url==2.3.0
+psycopg2-binary==2.9.10
+Pillow==11.0.0
+
+# Optional — only used when the CLOUDINARY_URL environment variable is set,
+# for persistent property/profile photo storage in production (Render's web
+# service disk is ephemeral). Safe to leave installed even if unused.
+django-cloudinary-storage==0.3.0
+cloudinary==1.41.0

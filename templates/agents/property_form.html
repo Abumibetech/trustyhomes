@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Edit Listing{% else %}Add Listing{% endif %} — TrustyHomes{% endblock %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+<style>
+  .map-picker{height:220px;border-radius:var(--radius-md);margin-top:8px}
+  .image-drop{border:2px dashed var(--line);border-radius:var(--radius-md);padding:20px;text-align:center;color:var(--ink-600);margin-bottom:14px}
+  .image-formset-row{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:var(--radius-md);padding:12px;margin-bottom:10px}
+  .image-formset-row .preview{width:70px;height:56px;border-radius:8px;object-fit:cover;background:var(--brand-100);flex:0 0 auto}
+  .image-formset-row .fields{flex:1;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .geo-btn{margin-top:6px}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:760px">
+    <span class="eyebrow">{% if is_edit %}Editing{% else %}New listing{% endif %}</span>
+    <h1>{% if is_edit %}Edit "{{ property.title }}"{% else %}List a property{% endif %}</h1>
+
+    <form method="post" enctype="multipart/form-data" class="panel">
+      {% csrf_token %}
+      <div class="form-row"><label>Category</label>{{ form.category }}</div>
+      <div class="form-row"><label>Title</label>{{ form.title }}</div>
+      <div class="form-row"><label>Description</label>{{ form.description }}</div>
+
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div><label>Property type</label>{{ form.property_type }}</div>
+        <div><label>Price period</label>{{ form.price_period }}</div>
+      </div>
+      <div class="form-row" id="roomCountsRow" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div><label>Bedrooms</label>{{ form.bedrooms }}</div>
+        <div><label>Bathrooms</label>{{ form.bathrooms }}</div>
+      </div>
+      <div class="form-row"><label>Price (₦)</label>{{ form.price }}</div>
+      <div class="form-row"><label>Available facilities (optional)</label>{{ form.facilities }}</div>
+
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label>State</label>{{ form.state }}
+        </div>
+        <div>
+          <label>Area / Neighbourhood</label>{{ form.area }}
+        </div>
+      </div>
+      <datalist id="areaSuggestions"></datalist>
+      <datalist id="propertyTypeSuggestions"></datalist>
+      <div class="form-row"><label>Rough address note (optional)</label>{{ form.address_note }}</div>
+
+      <div class="form-row">
+        <label>Pin the location on the map (optional but recommended)</label>
+        <input type="text" id="mapSearchBox" class="form-control" placeholder="Search an address or area, then press Enter..." style="margin-bottom:8px">
+        <div id="pickerMap" class="map-picker"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px">
+          <div id="locationStatus" style="font-size:.82rem;color:var(--ink-600)">Search above, click the map, or drag the pin to set the exact spot.</div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="useMyLocation()">📍 Use my current location</button>
+        </div>
+        {{ form.latitude }}
+        {{ form.longitude }}
+      </div>
+
+      <div class="form-row"><label>Video link (optional — YouTube walkthrough)</label>{{ form.video_url }}</div>
+
+      <hr style="border:none;border-top:1px solid var(--line);margin:22px 0">
+
+      <h3>Photos</h3>
+      <div class="image-drop">Upload clear photos of the property — living room, bedroom(s), kitchen, bathroom, and the exterior work best.</div>
+      {{ formset.management_form }}
+      {% for image_form in formset %}
+        <div class="image-formset-row">
+          {% if image_form.instance.display_url %}
+            <img class="preview" src="{{ image_form.instance.display_url }}" alt="">
+          {% else %}
+            <div class="preview"></div>
+          {% endif %}
+          <div class="fields">
+            {{ image_form.id }}
+            {{ image_form.image }}
+            {{ image_form.caption }}
+            {% if image_form.instance.pk %}
+              <label style="font-size:.8rem;color:var(--danger)">{{ image_form.DELETE }} Remove</label>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:16px">
+        {% if is_edit %}Save changes{% else %}Publish listing{% endif %}
+      </button>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+<script>
+  // Explicit icon paths so the marker renders correctly regardless of how
+  // static files are hashed/served in production.
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: '{% static "vendor/leaflet/images/marker-icon-2x.png" %}',
+    iconUrl: '{% static "vendor/leaflet/images/marker-icon.png" %}',
+    shadowUrl: '{% static "vendor/leaflet/images/marker-shadow.png" %}',
+  });
+
+  const latField = document.getElementById('id_latitude');
+  const lngField = document.getElementById('id_longitude');
+  const statusEl = document.getElementById('locationStatus');
+  const startLat = parseFloat(latField.value) || 9.0820;   // default: center of Nigeria
+  const startLng = parseFloat(lngField.value) || 8.6753;
+
+  const pickerMap = L.map('pickerMap').setView([startLat, startLng], latField.value ? 15 : 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(pickerMap);
+  const pickerMarker = L.marker([startLat, startLng], { draggable: true }).addTo(pickerMap);
+
+  function setFields(lat, lng){
+    latField.value = lat;
+    lngField.value = lng;
+    statusEl.textContent = 'Location set ✔ (' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')';
+  }
+  if (latField.value) setFields(startLat, startLng);
+
+  pickerMarker.on('dragend', () => {
+    const pos = pickerMarker.getLatLng();
+    setFields(pos.lat, pos.lng);
+  });
+  pickerMap.on('click', (e) => {
+    pickerMarker.setLatLng(e.latlng);
+    setFields(e.latlng.lat, e.latlng.lng);
+  });
+
+  // Free address search via OpenStreetMap's Nominatim geocoder — no API key needed.
+  const searchBox = document.getElementById('mapSearchBox');
+  searchBox.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const query = this.value.trim();
+    if (!query) return;
+    statusEl.textContent = 'Searching...';
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ng&q=${encodeURIComponent(query)}`)
+      .then(r => r.json())
+      .then(results => {
+        if (!results.length) { statusEl.textContent = 'No match found — try a different search, or click the map directly.'; return; }
+        const lat = parseFloat(results[0].lat), lng = parseFloat(results[0].lon);
+        pickerMap.setView([lat, lng], 16);
+        pickerMarker.setLatLng([lat, lng]);
+        setFields(lat, lng);
+      })
+      .catch(() => { statusEl.textContent = 'Search failed — you can still click the map directly.'; });
+  });
+
+  function useMyLocation(){
+    if (!navigator.geolocation) { statusEl.textContent = 'Geolocation is not supported by your browser.'; return; }
+    statusEl.textContent = 'Getting your location...';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      pickerMap.setView([pos.coords.latitude, pos.coords.longitude], 16);
+      pickerMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+      setFields(pos.coords.latitude, pos.coords.longitude);
+    }, function(){
+      statusEl.textContent = 'Could not get your location — you can search or click the map instead.';
+    });
+  }
+
+  const stateSelect = document.getElementById('id_state');
+  const areaSuggestions = document.getElementById('areaSuggestions');
+  const typeSuggestions = document.getElementById('propertyTypeSuggestions');
+
+  const categorySelect = document.getElementById('id_category');
+  const roomCountsRow = document.getElementById('roomCountsRow');
+  const categoriesWithRooms = ['rent', 'shortlet', 'roommate'];
+  function toggleRoomCounts(){
+    if (!categorySelect || !roomCountsRow) return;
+    roomCountsRow.style.display = categoriesWithRooms.includes(categorySelect.value) ? 'grid' : 'none';
+  }
+  if (categorySelect) {
+    categorySelect.addEventListener('change', toggleRoomCounts);
+    toggleRoomCounts();
+  }
+
+  fetch(`{% url 'listings:load_property_type_suggestions' %}`)
+    .then(r => r.text()).then(html => { if (typeSuggestions) typeSuggestions.innerHTML = html; });
+
+  if (stateSelect && areaSuggestions) {
+    stateSelect.addEventListener('change', function () {
+      if (!this.value) { areaSuggestions.innerHTML = ''; return; }
+      fetch(`{% url 'listings:load_area_suggestions' %}?state=${this.value}`)
+        .then(r => r.text()).then(html => { areaSuggestions.innerHTML = html; });
+    });
+    if (stateSelect.value) stateSelect.dispatchEvent(new Event('change'));
+  }
+</script>
+{% endblock %}

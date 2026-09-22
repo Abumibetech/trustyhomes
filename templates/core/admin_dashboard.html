@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — TrustyHomes{% endblock %}
+{% block extra_css %}
+<style>
+  .adm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+  @media (max-width:900px){ .adm-grid{grid-template-columns:repeat(2,1fr)} }
+  .adm-stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px}
+  .adm-stat .num{font-family:'Poppins';font-size:1.7rem;font-weight:700;color:var(--brand-700)}
+  .adm-stat .label{color:var(--ink-600);font-size:.82rem}
+  .adm-section{margin-bottom:30px}
+  .plan-bars span{display:inline-block;background:var(--brand-100);color:var(--brand-700);border-radius:999px;padding:4px 10px;font-size:.8rem;margin-right:6px}
+  .list-simple{list-style:none;padding:0;margin:0}
+  .list-simple li{padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;font-size:.9rem}
+  .list-simple li:last-child{border-bottom:none}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Admin</span>
+        <h2>Platform overview</h2>
+      </div>
+      <a href="/admin/" class="btn btn-primary btn-sm">Open full Django admin →</a>
+    </div>
+
+    <div class="adm-grid">
+      <div class="adm-stat"><div class="num">{{ stats.total_agents }}</div><div class="label">Total agents / owners</div></div>
+      <div class="adm-stat"><div class="num">{{ stats.verified_agents }}</div><div class="label">Verified agents</div></div>
+      <div class="adm-stat"><div class="num">{{ stats.total_properties }}</div><div class="label">Total properties</div></div>
+      <div class="adm-stat"><div class="num">{{ stats.available_properties }}</div><div class="label">Currently available</div></div>
+      <div class="adm-stat"><div class="num">{{ stats.verified_properties }}</div><div class="label">Verified properties</div></div>
+      <div class="adm-stat"><div class="num">{{ stats.featured_properties }}</div><div class="label">Featured properties</div></div>
+      <div class="adm-stat" style="border-color:{% if stats.pending_inspections %}#fcd34d{% else %}var(--line){% endif %}"><div class="num">{{ stats.pending_inspections }}</div><div class="label">Pending inspection requests</div></div>
+      <div class="adm-stat" style="border-color:{% if stats.unresolved_reports %}#fca5a5{% else %}var(--line){% endif %}"><div class="num">{{ stats.unresolved_reports }}</div><div class="label">Unresolved reports</div></div>
+    </div>
+
+    <div class="panel adm-section">
+      <h3 style="margin-top:0">Agents by plan</h3>
+      <div class="plan-bars">
+        {% for label, count in stats.agents_by_plan.items %}
+          <span>{{ label }}: {{ count }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="detail-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="panel adm-section">
+        <h3 style="margin-top:0">🚩 Unresolved reports</h3>
+        {% if recent_reports %}
+          <ul class="list-simple">
+            {% for r in recent_reports %}
+              <li><a href="{{ r.property.get_absolute_url }}">{{ r.property.title }}</a><span>{{ r.get_reason_display }}</span></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color:var(--ink-600)">No unresolved reports 🎉</p>
+        {% endif %}
+      </div>
+
+      <div class="panel adm-section">
+        <h3 style="margin-top:0">📩 Pending inspection requests</h3>
+        {% if recent_inspections %}
+          <ul class="list-simple">
+            {% for i in recent_inspections %}
+              <li><a href="{{ i.property.get_absolute_url }}">{{ i.property.title }}</a><span>{{ i.full_name }}</span></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color:var(--ink-600)">No pending requests.</p>
+        {% endif %}
+      </div>
+
+      <div class="panel adm-section">
+        <h3 style="margin-top:0">🕓 Recently listed properties</h3>
+        <ul class="list-simple">
+          {% for p in recent_properties %}
+            <li><a href="{{ p.get_absolute_url }}">{{ p.title }}</a><span>{{ p.agent.business_name }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="panel adm-section">
+        <h3 style="margin-top:0">🕵️ Agents awaiting verification</h3>
+        {% if pending_verification %}
+          <ul class="list-simple">
+            {% for a in pending_verification %}
+              <li>{{ a.business_name }}<span>{{ a.user.username }}</span></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color:var(--ink-600)">All agents verified.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

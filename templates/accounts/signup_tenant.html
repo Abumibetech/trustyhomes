@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Sign up as a tenant — TrustyHomes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:480px">
+    <span class="eyebrow">Tenant sign up</span>
+    <h1>Create your account</h1>
+    <form method="post" class="panel">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-row">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+    </form>
+    <p style="margin-top:14px;color:var(--ink-600)">Are you an agent or owner instead? <a href="{% url 'accounts:signup_agent' %}">Sign up to list properties</a></p>
+  </div>
+</section>
+{% endblock %}

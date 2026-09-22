@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}My Dashboard — TrustyHomes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Agent dashboard</span>
+        <h2>Welcome back, {{ profile.business_name }}</h2>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="{% url 'agents:upgrade_plan' %}" class="btn btn-outline btn-sm">Plans</a>
+        <a href="{% url 'agents:add_property' %}" class="btn btn-primary btn-sm">+ Add Listing</a>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat reveal">
+        <div class="num">{{ profile.uploads_today_count }}{% if profile.daily_upload_limit %} / {{ profile.daily_upload_limit }}{% endif %}</div>
+        <div class="label">Uploaded today ({{ profile.get_plan_display }})</div>
+      </div>
+      <div class="stat reveal">
+        <div class="num">{% if profile.is_verified %}✔ Verified{% else %}Pending{% endif %}</div>
+        <div class="label">Verification status</div>
+      </div>
+      <div class="stat reveal">
+        <div class="num">{% if profile.average_rating %}★ {{ profile.average_rating }}{% else %}—{% endif %}</div>
+        <div class="label">{{ profile.review_count }} review{{ profile.review_count|pluralize }}</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">Your listings</h3>
+      {% if properties %}
+      <div class="table-wrap">
+        <table class="dash">
+          <thead>
+            <tr>
+              <th>Title</th><th>Area</th><th>Price</th><th>Status</th><th>Verified</th><th>Featured</th><th>Views</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for property in properties %}
+              <tr>
+                <td><a href="{{ property.get_absolute_url }}">{{ property.title }}</a></td>
+                <td>{{ property.area }}</td>
+                <td>₦{{ property.price|intcomma }}</td>
+                <td>{% if property.is_available %}<span class="badge badge-verified">Available</span>{% else %}<span class="badge badge-unverified">Hidden</span>{% endif %}</td>
+                <td>{% if property.is_verified %}✔{% else %}—{% endif %}</td>
+                <td>{% if property.is_featured %}★{% else %}—{% endif %}</td>
+                <td>{{ property.views_count }}</td>
+                <td style="display:flex;gap:6px">
+                  <a href="{% url 'agents:edit_property' property.pk %}" class="btn btn-outline btn-sm">Edit</a>
+                  <form method="post" action="{% url 'agents:toggle_availability' property.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-ghost btn-sm">{% if property.is_available %}Hide{% else %}Show{% endif %}</button>
+                  </form>
+                  <form method="post" action="{% url 'agents:delete_property' property.pk %}" onsubmit="return confirm('Delete this listing permanently?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state">
+          <h3>No listings yet</h3>
+          <p>Add your first property — it's free.</p>
+          <a href="{% url 'agents:add_property' %}" class="btn btn-primary" style="margin-top:12px">+ Add your first listing</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

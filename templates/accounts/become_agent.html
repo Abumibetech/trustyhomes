@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Start listing properties — TrustyHomes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:520px">
+    <span class="eyebrow">One more step</span>
+    <h1>Start listing properties</h1>
+    <p style="color:var(--ink-600)">You're logged in as <strong>{{ request.user.username }}</strong>. Fill this in to start listing properties on this account — free, no new account needed.</p>
+    <form method="post" class="panel">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-row">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-block">Start listing — it's free</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

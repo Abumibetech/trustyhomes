@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Log in — TrustyHomes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:420px">
+    <span class="eyebrow">Welcome back</span>
+    <h1>Log in</h1>
+    <form method="post" class="panel">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-row">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-block">Log in</button>
+    </form>
+    <p style="margin-top:14px;color:var(--ink-600)">
+      <a href="{% url 'accounts:password_reset' %}">Forgot your password?</a>
+    </p>
+    <p style="margin-top:6px;color:var(--ink-600)">New here? <a href="{% url 'accounts:signup' %}">Create an account</a></p>
+  </div>
+</section>
+{% endblock %}

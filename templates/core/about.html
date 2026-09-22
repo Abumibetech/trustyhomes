@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}How TrustyHomes Works{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:820px">
+    <span class="eyebrow">How it works</span>
+    <h1>A property marketplace for all of Nigeria.</h1>
+    <p style="color:var(--ink-600);font-size:1.05rem">TrustyHomes connects you directly with the agent, agency or property owner behind every listing — houses, land, offices, shops, warehouses and more, across all 36 states and the FCT. We provide the marketplace; you deal with each other directly.</p>
+
+    <div class="panel reveal" style="margin-top:28px">
+      <h3>For tenants &amp; buyers</h3>
+      <ol style="color:var(--ink-600);line-height:1.9">
+        <li>Search by city, neighbourhood, category and budget.</li>
+        <li>See real photos, videos, facilities and a map of the area.</li>
+        <li>Message the agent or owner directly on WhatsApp, or call them.</li>
+        <li>Request an inspection before you commit to anything.</li>
+        <li>Save listings to favourites and share them with anyone.</li>
+        <li>Report anything that looks suspicious — our admin team reviews every report.</li>
+      </ol>
+    </div>
+
+    <div class="panel reveal">
+      <h3>For agents, owners &amp; real estate companies</h3>
+      <ul style="color:var(--ink-600);line-height:1.9">
+        <li><strong>Free:</strong> up to 50 new uploads a day, no card required.</li>
+        <li><strong>Basic — ₦5,000/month:</strong> up to 150 uploads a day.</li>
+        <li><strong>Pro — ₦10,000/month:</strong> unlimited uploads + featured placement.</li>
+        <li><strong>Business:</strong> custom plans for real estate companies managing many properties.</li>
+      </ul>
+      <p style="color:var(--ink-600);font-size:.9rem">Everything above is free while we're launching — upgrade requests are handled directly with our team for now.</p>
+      <a href="{% url 'accounts:signup_agent' %}" class="btn btn-primary">Get started free</a>
+    </div>
+
+    <div class="panel reveal">
+      <h3>Trust &amp; safety</h3>
+      <p style="color:var(--ink-600)">We connect you directly with the person behind each listing — we don't inspect, manage or guarantee every property ourselves. A "Verified" badge means our team has confirmed that agent's identity; treat it as one useful signal, not a guarantee. Your biggest protection is the report button on every listing: enough reports, and our admin team steps in to review it and can hide it while they investigate.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

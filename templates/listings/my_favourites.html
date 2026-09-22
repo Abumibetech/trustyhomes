@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}My Favourites — TrustyHomes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <span class="eyebrow">Saved</span>
+    <h1>My Favourites</h1>
+    {% if favourites %}
+      <div class="grid" style="margin-top:20px">
+        {% for fav in favourites %}
+          {% with property=fav.property %}
+            {% include "listings/_property_card.html" %}
+          {% endwith %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <h3>No favourites yet</h3>
+        <p>Tap the heart icon on any listing to save it here.</p>
+        <a href="{% url 'listings:property_list' %}" class="btn btn-primary" style="margin-top:12px">Browse properties</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

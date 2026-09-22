@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Conversation — TrustyHomes{% endblock %}
+{% block extra_css %}
+<style>
+  .chat-wrap{display:flex;flex-direction:column;height:65vh;border:1px solid var(--line);border-radius:var(--radius-lg);background:#fff;overflow:hidden}
+  .chat-header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .chat-messages{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+  .bubble{max-width:72%;padding:10px 14px;border-radius:14px;font-size:.9rem;line-height:1.4}
+  .bubble.mine{align-self:flex-end;background:var(--brand-600);color:#fff;border-bottom-right-radius:4px}
+  .bubble.theirs{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+  .bubble .meta{display:block;font-size:.68rem;opacity:.75;margin-top:4px}
+  .chat-input{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line)}
+  .chat-input textarea{flex:1;resize:none;border-radius:var(--radius-sm);border:1px solid var(--line);padding:10px 12px;font-family:inherit}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:720px">
+    <p style="margin-bottom:12px"><a href="{% url 'messaging:inbox' %}">← Back to inbox</a></p>
+    <div class="chat-wrap">
+      <div class="chat-header">
+        <div class="agent-avatar" style="width:40px;height:40px">
+          {% if conversation.tenant == request.user %}{{ conversation.agent.business_name|first|upper }}{% else %}{{ conversation.tenant.username|first|upper }}{% endif %}
+        </div>
+        <div>
+          <strong>{% if conversation.tenant == request.user %}{{ conversation.agent.business_name }}{% else %}{{ conversation.tenant.username }}{% endif %}</strong>
+          {% if conversation.property %}<div style="font-size:.8rem;color:var(--ink-600)">Re: <a href="{{ conversation.property.get_absolute_url }}">{{ conversation.property.title }}</a></div>{% endif %}
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        {% for message in conversation.messages.all %}
+          <div class="bubble {% if message.sender == request.user %}mine{% else %}theirs{% endif %}">
+            {{ message.text }}
+            <span class="meta">{{ message.created_at|date:"M d, g:i A" }}</span>
+          </div>
+        {% empty %}
+          <p style="color:var(--ink-600);text-align:center;margin:auto">Say hello 👋 — start the conversation below.</p>
+        {% endfor %}
+      </div>
+
+      <form class="chat-input" id="chatForm" method="post" action="{% url 'messaging:conversation' conversation.pk %}">
+        {% csrf_token %}
+        <textarea name="text" rows="1" placeholder="Type a message..." required></textarea>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const chatMessages = document.getElementById('chatMessages');
+  const chatForm = document.getElementById('chatForm');
+  let lastId = {{ conversation.messages.last.id|default:0 }};
+  const myUsername = "{{ request.user.username|escapejs }}";
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  function appendMessage(msg){
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (msg.is_mine ? 'mine' : 'theirs');
+    bubble.innerHTML = msg.text + '<span class="meta">' + msg.created_at + '</span>';
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    lastId = msg.id;
+  }
+
+  chatForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const textarea = chatForm.querySelector('textarea');
+    const text = textarea.value.trim();
+    if (!text) return;
+    textarea.disabled = true;
+    fetch(chatForm.action, {
+      method: 'POST',
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
+      body: new FormData(chatForm),
+    }).then(() => {
+      textarea.value = '';
+      textarea.disabled = false;
+      textarea.focus();
+      poll();
+    });
+  });
+
+  function poll(){
+    fetch(`{% url 'messaging:poll_messages' conversation.pk %}?after=${lastId}`)
+      .then(r => r.json())
+      .then(data => { data.messages.forEach(appendMessage); });
+  }
+
+  setInterval(poll, 4000);
+</script>
+{% endblock %}

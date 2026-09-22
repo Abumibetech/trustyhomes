@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load humanize static %}
+{% block title %}{{ property.title }} — TrustyHomes{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+<style>
+  .detail-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:start}
+  @media (max-width:960px){ .detail-layout{grid-template-columns:1fr} }
+  .gallery-main{border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:16/10;background:var(--brand-100)}
+  .gallery-main img{width:100%;height:100%;object-fit:cover}
+  .gallery-thumbs{display:flex;gap:10px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+  .gallery-thumbs img{width:84px;height:64px;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid transparent;flex:0 0 auto}
+  .gallery-thumbs img.active{border-color:var(--brand-600)}
+  .price-tag{font-family:'Poppins';font-size:1.9rem;font-weight:700;color:var(--brand-700)}
+  .meta-pills{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  .pill{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.85rem;color:var(--ink-600)}
+  .sticky-card{position:sticky;top:84px}
+  .agent-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .agent-avatar{width:50px;height:50px;border-radius:50%;background:var(--brand-100);color:var(--brand-700);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem}
+  .map-frame{width:100%;height:260px;border:0;border-radius:var(--radius-md)}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .tab-btn{padding:10px 6px;font-weight:600;color:var(--ink-600);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer}
+  .tab-btn.active{color:var(--brand-700);border-bottom-color:var(--brand-600)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section" style="padding-top:28px">
+  <div class="container">
+    <p style="color:var(--ink-400);font-size:.85rem;margin-bottom:14px">
+      <a href="{% url 'listings:property_list' %}">Properties</a> / {{ property.state.name }} / {{ property.area }}
+    </p>
+
+    <div class="detail-layout">
+      <div>
+        {% with images=property.images.all %}
+        <div class="gallery-main">
+          {% if images %}
+            <img id="mainImage" src="{{ images.0.display_url }}" alt="{{ property.title }}">
+          {% else %}
+            <div class="no-img" style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">🏠</div>
+          {% endif %}
+        </div>
+        {% if images|length > 1 %}
+        <div class="gallery-thumbs">
+          {% for img in images %}
+            <img src="{{ img.display_url }}" class="{% if forloop.first %}active{% endif %}" onclick="document.getElementById('mainImage').src=this.src; document.querySelectorAll('.gallery-thumbs img').forEach(i=>i.classList.remove('active')); this.classList.add('active');">
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div style="margin-top:24px">
+          <div class="card-badges" style="position:static;margin-bottom:10px">
+            {% if property.is_verified %}<span class="badge badge-verified">✔ Verified listing</span>{% else %}<span class="badge badge-unverified">Not yet verified</span>{% endif %}
+            {% if property.is_featured %}<span class="badge badge-featured">★ Featured</span>{% endif %}
+          </div>
+          <h1 style="margin:0 0 6px;font-size:1.6rem">{{ property.title }}</h1>
+          <p style="color:var(--ink-600)">📍 {{ property.area }}, {{ property.state.name }}{% if property.address_note %} — {{ property.address_note }}{% endif %}</p>
+          <div class="price-tag">₦{{ property.price|intcomma }} <small style="font-size:1rem;color:var(--ink-400);font-weight:500">/ {{ property.get_price_period_display }}</small></div>
+
+          <div class="meta-pills">
+            <span class="pill">{{ property.get_category_display }}</span>
+            <span class="pill">🏠 {{ property.property_type }}</span>
+            {% if property.shows_room_counts %}
+              <span class="pill">🛏 {{ property.bedrooms }} bed</span>
+              <span class="pill">🚿 {{ property.bathrooms }} bath</span>
+            {% endif %}
+            <span class="pill">👁 {{ property.views_count }} views</span>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('desc', this)">Description</button>
+            {% if property.facilities_list %}<button class="tab-btn" onclick="showTab('facilities', this)">Facilities</button>{% endif %}
+            {% if property.video_url %}<button class="tab-btn" onclick="showTab('video', this)">Video</button>{% endif %}
+            <button class="tab-btn" onclick="showTab('map', this)">Map</button>
+          </div>
+
+          <div id="tab-desc" class="tab-panel active">
+            <p style="color:var(--ink-600);line-height:1.7;white-space:pre-line">{{ property.description }}</p>
+          </div>
+          {% if property.facilities_list %}
+          <div id="tab-facilities" class="tab-panel">
+            <div class="meta-pills">
+              {% for facility in property.facilities_list %}
+                <span class="pill">✔ {{ facility }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if property.video_url %}
+          <div id="tab-video" class="tab-panel">
+            <div style="aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden">
+              <iframe class="map-frame" style="height:100%" src="{{ property.embed_video_url }}" allowfullscreen></iframe>
+            </div>
+          </div>
+          {% endif %}
+          <div id="tab-map" class="tab-panel">
+            <div id="propertyMap" class="map-frame"
+                 data-lat="{{ property.map_center.lat }}"
+                 data-lng="{{ property.map_center.lng }}"
+                 data-zoom="{{ property.map_center.zoom }}"
+                 data-precise="{{ property.map_center.precise|yesno:'1,0' }}"
+                 data-title="{{ property.title }}"></div>
+            {% if not property.map_center.precise %}
+              <p style="font-size:.8rem;color:var(--ink-400);margin-top:6px">Exact pin not set yet — showing the general {{ property.state.name }} area.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="sticky-card">
+        <div class="panel">
+          <div class="agent-row">
+            <div class="agent-avatar">{{ property.agent.business_name|first|upper }}</div>
+            <div>
+              <a href="{% url 'agents:public_profile' property.agent.pk %}" style="font-weight:700">{{ property.agent.business_name }}</a>
+              <div style="font-size:.82rem;color:var(--ink-600)">
+                {% if property.agent.is_verified %}✔ Verified agent{% else %}Unverified agent{% endif %}
+                {% if property.agent.average_rating %} · ★ {{ property.agent.average_rating }} ({{ property.agent.review_count }}){% endif %}
+              </div>
+            </div>
+          </div>
+
+          <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="btn btn-wa btn-block">💬 Chat on WhatsApp</a>
+          {% if property.agent.phone_number %}
+            <a href="tel:{{ property.agent.phone_number }}" class="btn btn-outline btn-block" style="margin-top:10px">📞 Call Agent</a>
+          {% endif %}
+          {% if user.is_authenticated and not is_owner %}
+            <a href="{% url 'messaging:start_conversation' property.slug %}" class="btn btn-outline btn-block" style="margin-top:10px">✉️ Message on TrustyHomes</a>
+          {% endif %}
+          <button type="button" class="btn btn-ghost btn-block" style="margin-top:10px" onclick="shareListing()">🔗 Share this listing</button>
+
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'listings:toggle_favourite' property.slug %}" style="margin-top:10px">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline btn-block">{% if is_favourited %}♥ Saved to Favourites{% else %}♡ Save to Favourites{% endif %}</button>
+            </form>
+          {% endif %}
+
+          {% if is_owner and not property.is_featured %}
+            <a href="{% url 'agents:upgrade_plan' %}" class="btn btn-accent btn-block" style="margin-top:10px">⭐ Get this listing Featured</a>
+          {% endif %}
+        </div>
+
+        <div class="panel">
+          <h3 style="margin-top:0">Request an inspection</h3>
+          <form method="post" action="{% url 'listings:request_inspection' property.slug %}">
+            {% csrf_token %}
+            <div class="form-row"><label>Full name</label>{{ inspection_form.full_name }}</div>
+            <div class="form-row"><label>Phone number</label>{{ inspection_form.phone_number }}</div>
+            <div class="form-row"><label>Email (optional)</label>{{ inspection_form.email }}</div>
+            <div class="form-row"><label>Preferred date</label>{{ inspection_form.preferred_date }}</div>
+            <div class="form-row"><label>Message (optional)</label>{{ inspection_form.message }}</div>
+            <button type="submit" class="btn btn-primary btn-block">Request Inspection</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <details>
+            <summary style="cursor:pointer;font-weight:600;color:var(--danger)">🚩 Report this listing</summary>
+            <form method="post" action="{% url 'listings:report_listing' property.slug %}" style="margin-top:14px">
+              {% csrf_token %}
+              <div class="form-row"><label>Your name (optional)</label>{{ report_form.reporter_name }}</div>
+              <div class="form-row"><label>Contact (optional)</label>{{ report_form.reporter_contact }}</div>
+              <div class="form-row"><label>Reason</label>{{ report_form.reason }}</div>
+              <div class="form-row"><label>Details</label>{{ report_form.details }}</div>
+              <button type="submit" class="btn btn-danger btn-block">Submit Report</button>
+            </form>
+          </details>
+        </div>
+        {% include "listings/_ad_banner.html" %}
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:40px" id="comments">
+      <div><span class="eyebrow">Discussion</span><h2>{{ comments|length }} comment{{ comments|length|pluralize }}</h2></div>
+    </div>
+    <div class="panel reveal" style="max-width:760px">
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'listings:add_comment' property.slug %}" style="display:flex;gap:10px;align-items:flex-start;margin-bottom:20px">
+          {% csrf_token %}
+          <div style="flex:1">{{ comment_form.text }}</div>
+          <button type="submit" class="btn btn-primary" style="flex-shrink:0">Post</button>
+        </form>
+      {% else %}
+        <p style="color:var(--ink-600);margin-bottom:20px"><a href="{% url 'accounts:login' %}">Log in</a> to join the discussion.</p>
+      {% endif %}
+
+      {% for comment in comments %}
+        <div style="display:flex;gap:12px;padding:14px 0;{% if not forloop.last %}border-bottom:1px solid var(--line){% endif %}">
+          <div class="agent-avatar" style="width:38px;height:38px;font-size:.95rem;flex-shrink:0">{{ comment.author.username|first|upper }}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;gap:10px">
+              <strong style="font-size:.9rem">{{ comment.author.username }}</strong>
+              <span style="font-size:.78rem;color:var(--ink-400)">{{ comment.created_at|timesince }} ago</span>
+            </div>
+            <p style="color:var(--ink-600);margin:4px 0 6px">{{ comment.text }}</p>
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'listings:toggle_comment_like' comment.id %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="link-btn" style="font-size:.8rem;{% if comment.id in liked_comment_ids %}color:var(--brand-600);font-weight:600{% endif %}">
+                  👍 {{ comment.like_count }}{% if comment.like_count %} like{{ comment.like_count|pluralize }}{% else %} Like{% endif %}
+                </button>
+              </form>
+            {% else %}
+              <span style="font-size:.8rem;color:var(--ink-400)">👍 {{ comment.like_count }}</span>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p style="color:var(--ink-600)">No comments yet — be the first to ask a question about this listing.</p>
+      {% endfor %}
+    </div>
+
+    {% if similar %}
+    <div class="section-head" style="margin-top:40px">
+      <div><span class="eyebrow">Nearby</span><h2>More in {{ property.area }}</h2></div>
+    </div>
+    <div class="grid">
+      {% for property in similar %}
+        {% include "listings/_property_card.html" %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+<script>
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: '{% static "vendor/leaflet/images/marker-icon-2x.png" %}',
+    iconUrl: '{% static "vendor/leaflet/images/marker-icon.png" %}',
+    shadowUrl: '{% static "vendor/leaflet/images/marker-shadow.png" %}',
+  });
+
+  let propertyLeafletMap = null;
+
+  function shareListing(){
+    const shareData = {
+      title: '{{ property.title|escapejs }}',
+      text: 'Check out this listing on TrustyHomes: {{ property.title|escapejs }}',
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Link copied! Paste it anywhere to share this listing.');
+      });
+    }
+  }
+
+  function showTab(name, btn){
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+
+    if (name === 'map') {
+      const el = document.getElementById('propertyMap');
+      const lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng), zoom = parseInt(el.dataset.zoom, 10);
+      if (!propertyLeafletMap) {
+        propertyLeafletMap = L.map('propertyMap').setView([lat, lng], zoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(propertyLeafletMap);
+        if (el.dataset.precise === '1') {
+          L.marker([lat, lng]).addTo(propertyLeafletMap).bindPopup(el.dataset.title);
+        } else {
+          L.circle([lat, lng], { radius: 6000, color: '#137a52', fillOpacity: 0.12 }).addTo(propertyLeafletMap);
+        }
+      }
+      setTimeout(() => propertyLeafletMap.invalidateSize(), 80);
+    }
+  }
+</script>
+{% endblock %}

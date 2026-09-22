@@ -1,0 +1,462 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}TrustyHomes — Verified houses, rooms & agents in Nigeria{% endblock %}</title>
+<meta name="description" content="Find verified houses, rooms and agents around you. TrustyHomes connects renters directly with verified agents and property owners across Nigeria.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand-900:#0b3d2e;
+    --brand-700:#0f5c3f;
+    --brand-600:#137a52;
+    --brand-500:#18a566;
+    --brand-100:#e6f6ee;
+    --accent:#ffb020;
+    --ink-900:#111827;
+    --ink-600:#4b5563;
+    --ink-400:#9ca3af;
+    --line:#e5e7eb;
+    --bg:#f7f9f8;
+    --card:#ffffff;
+    --danger:#dc2626;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow-md:0 8px 24px rgba(16,24,40,.08);
+    --wa:#25D366;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    color:var(--ink-900);
+    background:var(--bg);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4,.font-brand{font-family:'Poppins',sans-serif}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  .container{width:100%;max-width:1180px;margin:0 auto;padding:0 20px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 20px;border-radius:999px;font-weight:600;font-size:.95rem;
+    border:1px solid transparent;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background-color .15s ease,filter .15s ease;white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn-primary{background:var(--brand-600);color:#fff}
+  .btn-primary:hover{background:var(--brand-700)}
+  .btn-accent{background:var(--accent);color:#3a2600}
+  .btn-accent:hover{filter:brightness(.95)}
+  .btn-outline{background:#fff;color:var(--brand-700);border-color:var(--brand-600)}
+  .btn-outline:hover{background:var(--brand-100)}
+  .btn-ghost{background:transparent;color:var(--ink-900)}
+  .btn-danger{background:#fff;color:var(--danger);border-color:var(--danger)}
+  .btn-wa{background:var(--wa);color:#fff}
+  .btn-wa:hover{filter:brightness(.95)}
+  .btn-block{width:100%}
+  .btn-sm{padding:8px 14px;font-size:.85rem}
+
+  /* ---------- Navbar ---------- */
+  .navbar{
+    position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);
+    transition:box-shadow .2s ease;
+  }
+  .navbar.scrolled{box-shadow:0 4px 16px rgba(16,24,40,.08)}
+  .navbar-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1.25rem;color:var(--brand-800,var(--brand-700))}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;background:var(--brand-600);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;
+  }
+  .nav-links{display:flex;align-items:center;gap:26px}
+  .nav-links a{font-weight:500;font-size:.95rem;color:var(--ink-600)}
+  .nav-links a:hover{color:var(--brand-700)}
+  .logout-form{margin:0;display:inline}
+  .link-btn{
+    background:none;border:none;padding:0;margin:0;cursor:pointer;font:inherit;
+    font-weight:500;font-size:.95rem;color:var(--ink-600);
+  }
+  .link-btn:hover{color:var(--brand-700)}
+  .nav-actions{display:flex;align-items:center;gap:10px}
+  .nav-toggle{display:none;background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--ink-900)}
+
+  @media (max-width:860px){
+    .nav-links{
+      position:fixed;top:68px;left:0;right:0;bottom:0;background:#fff;
+      flex-direction:column;align-items:flex-start;gap:0;padding:10px 20px 24px;
+      transform:translateY(-8px);opacity:0;pointer-events:none;transition:.18s ease;
+      border-top:1px solid var(--line);overflow-y:auto;
+    }
+    .nav-links a, .nav-links .logout-form{width:100%}
+    .nav-links a{padding:14px 0;border-bottom:1px solid var(--line)}
+    .nav-links .link-btn{width:100%;text-align:left;padding:14px 0;border-bottom:1px solid var(--line)}
+    body.nav-open .nav-links{transform:translateY(0);opacity:1;pointer-events:auto}
+    .nav-toggle{display:block}
+    .nav-actions .btn span.long{display:none}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:linear-gradient(160deg,var(--brand-900),var(--brand-600) 120%);
+    color:#fff;padding:56px 0 90px;position:relative;overflow:hidden;
+  }
+  .hero::before, .hero::after{
+    content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.06);
+    animation:floatShape 9s ease-in-out infinite;
+  }
+  .hero::before{width:340px;height:340px;top:-120px;right:-80px}
+  .hero::after{width:220px;height:220px;bottom:-90px;right:220px;animation-delay:1.5s}
+  @keyframes floatShape{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+  .hero-inner{position:relative;z-index:1}
+  .hero h1{font-size:2.4rem;line-height:1.15;margin:0 0 14px;max-width:680px}
+  .hero p.lead{font-size:1.05rem;color:#d7ece2;max-width:560px;margin:0 0 28px}
+  @media (max-width:640px){ .hero h1{font-size:1.7rem} .hero{padding:36px 0 70px} }
+
+  /* ---------- Trust stats strip ---------- */
+  .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  @media (max-width:640px){ .stats-strip{grid-template-columns:1fr} }
+  .stat-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:var(--radius-md);padding:16px;text-align:center;backdrop-filter:blur(2px)}
+  .stat-box .count-up{font-family:'Poppins';font-size:1.8rem;font-weight:700;color:#fff;display:block}
+  .stat-box .stat-label{font-size:.8rem;color:#cfe9dc}
+
+  /* ---------- Search card ---------- */
+  .search-card{
+    background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+    padding:20px;margin-top:-58px;position:relative;z-index:5;
+  }
+  .search-grid{display:grid;grid-template-columns:repeat(5,1fr) auto;gap:12px;align-items:end}
+  @media (max-width:940px){ .search-grid{grid-template-columns:1fr 1fr} }
+  @media (max-width:560px){ .search-grid{grid-template-columns:1fr} }
+  .field label{display:block;font-size:.78rem;font-weight:600;color:var(--ink-600);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
+  .form-control, select.form-control, input.form-control{
+    width:100%;padding:11px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);
+    font-size:.95rem;background:#fbfbfb;font-family:inherit;
+  }
+  .form-control:focus{outline:none;border-color:var(--brand-500);background:#fff}
+  .form-check{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--ink-600)}
+  /* Fallback styling so any un-classed Django widget (e.g. the built-in login form) still looks right */
+  .panel input[type=text], .panel input[type=email], .panel input[type=password],
+  .panel input[type=number], .panel input[type=date], .panel input[type=url],
+  .panel select, .panel textarea{
+    width:100%;padding:11px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);
+    font-size:.95rem;background:#fbfbfb;font-family:inherit;
+  }
+  .panel input:focus, .panel select:focus, .panel textarea:focus{outline:none;border-color:var(--brand-500);background:#fff}
+
+  /* ---------- Sections ---------- */
+  .section{padding:56px 0}
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:10px}
+  .section-head h2{font-size:1.55rem;margin:0}
+  .section-head p{color:var(--ink-600);margin:6px 0 0}
+  .eyebrow{color:var(--brand-600);font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
+
+  /* ---------- Property cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  @media (max-width:1024px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:560px){ .grid{grid-template-columns:1fr} }
+
+  .card-prop{
+    background:var(--card);border-radius:var(--radius-lg);overflow:hidden;position:relative;
+    box-shadow:var(--shadow-sm);border:1px solid var(--line);transition:.15s ease;
+  }
+  .card-prop:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .card-prop-link{display:block;color:inherit}
+  .card-prop-media{position:relative;aspect-ratio:4/3;background:var(--brand-100);overflow:hidden}
+  .card-prop-media img{width:100%;height:100%;object-fit:cover}
+  .no-img-fallback{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:100%;
+    color:var(--brand-600);background:linear-gradient(135deg,var(--brand-100),#f3faf6);
+  }
+  .no-img-fallback span{font-size:.78rem;font-weight:600;color:var(--brand-700)}
+  .card-heart-form{position:absolute;top:10px;right:10px;z-index:5}
+  .badge{
+    display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;
+    padding:4px 9px;border-radius:999px;line-height:1;
+  }
+  .badge-verified{background:#e6f6ee;color:var(--brand-700)}
+  .badge-featured{background:#fff4de;color:#8a5a00}
+  .badge-unverified{background:#fef2f2;color:#b91c1c}
+  .card-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .card-prop-body{padding:16px}
+  .card-prop-price{font-family:'Poppins';font-weight:700;color:var(--brand-700);font-size:1.15rem}
+  .card-prop-price small{color:var(--ink-400);font-weight:500;font-size:.75rem}
+  .card-prop-title{font-weight:600;margin:6px 0 4px;font-size:1rem}
+  .card-prop-meta{color:var(--ink-600);font-size:.85rem;display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+
+  .empty-state{
+    text-align:center;padding:60px 20px;background:#fff;border-radius:var(--radius-lg);
+    border:1px dashed var(--line);color:var(--ink-600);
+  }
+
+  /* ---------- How it works / trust ---------- */
+  .trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media (max-width:800px){ .trust-grid{grid-template-columns:1fr} }
+  .trust-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid var(--line)}
+  .trust-icon{
+    width:44px;height:44px;border-radius:12px;background:var(--brand-100);color:var(--brand-700);
+    display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:14px;
+  }
+
+  /* ---------- Forms / panels ---------- */
+  .panel{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--line);padding:26px}
+  .panel + .panel{margin-top:20px}
+  .form-row{margin-bottom:16px}
+  .form-row label{display:block;font-weight:600;font-size:.88rem;margin-bottom:6px}
+  .help-text{font-size:.8rem;color:var(--ink-400);margin-top:4px}
+  .errorlist{color:var(--danger);font-size:.82rem;list-style:none;padding:0;margin:4px 0 0}
+  .messages{list-style:none;padding:0;margin:16px 0}
+  .messages li{padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:8px;font-size:.9rem}
+  .messages .success{background:#e6f6ee;color:var(--brand-700)}
+  .messages .error{background:#fef2f2;color:#b91c1c}
+
+  /* ---------- Dashboard table ---------- */
+  .table-wrap{overflow-x:auto}
+  table.dash{width:100%;border-collapse:collapse;font-size:.9rem}
+  table.dash th{text-align:left;color:var(--ink-600);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.dash td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+  @media (max-width:700px){ .stat-row{grid-template-columns:1fr} }
+  .stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px}
+  .stat .num{font-family:'Poppins';font-size:1.6rem;font-weight:700;color:var(--brand-700)}
+  .stat .label{color:var(--ink-600);font-size:.85rem}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--brand-900);color:#cfe9dc;padding:44px 0 26px;margin-top:60px}
+  footer h4{color:#fff;font-size:.95rem;margin:0 0 12px}
+  footer a{color:#bcdccb;font-size:.9rem}
+  footer a:hover{color:#fff}
+  .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:28px}
+  @media (max-width:800px){ .footer-grid{grid-template-columns:1fr 1fr} }
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:32px;padding-top:18px;font-size:.8rem;color:#9fc3b0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  .wa-float{
+    position:fixed;bottom:20px;right:20px;z-index:60;background:var(--wa);color:#fff;
+    width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:1.5rem;box-shadow:var(--shadow-md);
+  }
+
+  /* ---------- Animations ---------- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
+  .reveal.in-view{opacity:1;transform:translateY(0)}
+  .fade-in{animation:fadeIn .4s ease both}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .pulse-badge{animation:pulseBadge 1.8s ease infinite}
+  @keyframes pulseBadge{0%,100%{box-shadow:0 0 0 0 rgba(24,165,102,.4)}50%{box-shadow:0 0 0 6px rgba(24,165,102,0)}}
+
+  /* ---------- Notification bell ---------- */
+  .icon-btn{
+    position:relative;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:#f2f5f3;border:1px solid var(--line);font-size:1.1rem;cursor:pointer;
+  }
+  .icon-btn .dot{
+    position:absolute;top:-2px;right:-2px;background:var(--danger);color:#fff;font-size:.62rem;
+    min-width:16px;height:16px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;padding:0 3px;
+  }
+  .heart-btn{
+    background:#fff;border:1px solid var(--line);border-radius:50%;width:36px;height:36px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--ink-400);
+  }
+  .heart-btn.active{color:#e11d48;border-color:#fecdd3;background:#fff1f2}
+
+  /* ---------- Banner ads ---------- */
+  .ad-banner-strip{display:flex;gap:14px;overflow-x:auto;margin:20px 0;padding-bottom:4px}
+  .ad-banner{position:relative;flex:0 0 auto;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);display:block}
+  .ad-banner img{height:90px;width:auto;display:block;max-width:320px;object-fit:cover}
+  .ad-tag{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:600}
+
+  /* ---------- City grid (browse by city) ---------- */
+  .city-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  @media (max-width:900px){ .city-grid{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:560px){ .city-grid{grid-template-columns:repeat(2,1fr)} }
+  .city-card{position:relative;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:1/1;display:flex;align-items:flex-end}
+  .city-illustration{position:absolute;inset:0;width:100%;height:100%}
+  .city-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+  .city-card:hover .city-illustration,.city-card:hover .city-photo{transform:scale(1.08);transition:transform .3s ease}
+  .city-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.55));z-index:2}
+  .city-name{position:relative;bottom:0;left:0;padding:0 12px 10px;color:#fff;font-weight:700;font-family:'Poppins';z-index:3}
+
+  /* ---------- Category grid ---------- */
+  .category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:800px){ .category-grid{grid-template-columns:repeat(2,1fr)} }
+  .category-card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;
+    font-weight:600;font-size:.9rem;color:var(--ink-900);transition:.15s ease;
+  }
+  .category-card:hover{border-color:var(--brand-500);box-shadow:var(--shadow-sm);transform:translateY(-2px)}
+  .category-icon{font-size:1.8rem}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container navbar-inner">
+    <a href="{% url 'core:home' %}" class="brand">
+      <span class="brand-mark">🏠</span> TrustyHomes
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="{% url 'listings:property_list' %}">Browse Properties</a>
+      <a href="{% url 'core:about' %}">How it Works</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'listings:my_favourites' %}">Favourites</a>
+        <a href="{% url 'messaging:inbox' %}">Messages{% if unread_messages_count %} ({{ unread_messages_count }}){% endif %}</a>
+        <a href="{% url 'notifications:list' %}">Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
+        {% if user.agent_profile %}
+          <a href="{% url 'agents:dashboard' %}">My Dashboard</a>
+        {% else %}
+          <a href="{% url 'accounts:become_agent' %}">List a Property</a>
+        {% endif %}
+        <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" class="link-btn">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}">Login</a>
+        <a href="{% url 'accounts:signup' %}">List a Property</a>
+      {% endif %}
+    </nav>
+    <div class="nav-actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'listings:my_favourites' %}" class="icon-btn" title="Favourites">♥</a>
+        <a href="{% url 'messaging:inbox' %}" class="icon-btn" title="Messages">
+          ✉️
+          {% if unread_messages_count %}<span class="dot">{{ unread_messages_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'notifications:list' %}" class="icon-btn" title="Notifications">
+          🔔
+          {% if unread_notifications_count %}<span class="dot">{{ unread_notifications_count }}</span>{% endif %}
+        </a>
+        {% if user.agent_profile %}
+          <a href="{% url 'agents:add_property' %}" class="btn btn-primary btn-sm"><span class="long">+ Add</span> Listing</a>
+        {% else %}
+          <a href="{% url 'accounts:become_agent' %}" class="btn btn-primary btn-sm">List Free</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-sm">List Free</a>
+      {% endif %}
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  {% if messages %}
+    <div class="container">
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<a class="wa-float" href="https://wa.me/{{ SITE_WHATSAPP_NUMBER }}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4 class="font-brand">🏠 TrustyHomes</h4>
+        <p style="max-width:280px">Find verified houses, rooms and agents around you — built for trust, not just listings.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <p><a href="{% url 'listings:property_list' %}">Browse properties</a></p>
+        <p><a href="{% url 'core:about' %}">How it works</a></p>
+      </div>
+      <div>
+        <h4>For Agents</h4>
+        <p><a href="{% url 'accounts:signup' %}">List for free</a></p>
+        <p><a href="{% url 'accounts:login' %}">Agent login</a></p>
+      </div>
+      <div>
+        <h4>Trust & Safety</h4>
+        <p>Report a suspicious listing from any property page.</p>
+        <p><a href="https://wa.me/{{ SITE_WHATSAPP_NUMBER }}">Chat with support</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; {% now "Y" %} TrustyHomes. All rights reserved.</span>
+      <span>Made in Nigeria 🇳🇬</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const navToggle = document.getElementById('navToggle');
+  navToggle && navToggle.addEventListener('click', function(){
+    document.body.classList.toggle('nav-open');
+  });
+
+  const navbarEl = document.querySelector('.navbar');
+  if (navbarEl) {
+    window.addEventListener('scroll', () => {
+      navbarEl.classList.toggle('scrolled', window.scrollY > 8);
+    }, { passive: true });
+  }
+
+  if ('IntersectionObserver' in window) {
+    // Stagger the reveal animation for elements that share a parent (grids,
+    // trust cards, etc.) so they cascade in rather than popping in together.
+    const groups = new Map();
+    document.querySelectorAll('.reveal').forEach(el => {
+      const parent = el.parentElement;
+      const index = groups.has(parent) ? groups.get(parent) : 0;
+      groups.set(parent, index + 1);
+      el.style.transitionDelay = Math.min(index * 70, 420) + 'ms';
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in-view'));
+  }
+
+  // Animated count-up for the homepage trust-stats strip.
+  document.querySelectorAll('.count-up').forEach(el => {
+    const target = parseInt(el.dataset.target, 10) || 0;
+    const durationMs = 1200;
+    let started = false;
+    const runCount = () => {
+      if (started) return;
+      started = true;
+      const start = performance.now();
+      function tick(now){
+        const progress = Math.min((now - start) / durationMs, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target).toLocaleString();
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    };
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => { if (entry.isIntersecting) { runCount(); obs.disconnect(); } });
+      }, { threshold: 0.4 }).observe(el);
+    } else {
+      runCount();
+    }
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

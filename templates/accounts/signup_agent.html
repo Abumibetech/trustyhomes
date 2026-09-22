@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}List a property free — TrustyHomes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:520px">
+    <span class="eyebrow">Agent / owner sign up</span>
+    <h1>List your first property free</h1>
+    <form method="post" class="panel">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-row">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+    </form>
+    <p style="margin-top:14px;color:var(--ink-600)">Just looking for a place instead? <a href="{% url 'accounts:signup_tenant' %}">Sign up as a tenant</a></p>
+  </div>
+</section>
+{% endblock %}

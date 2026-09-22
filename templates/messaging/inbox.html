@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Messages — TrustyHomes{% endblock %}
+{% block extra_css %}
+<style>
+  .conv-row{display:flex;gap:14px;align-items:center;padding:16px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+  .conv-row:hover{background:var(--bg)}
+  .conv-row .unread-dot{width:10px;height:10px;border-radius:50%;background:var(--brand-600);flex-shrink:0}
+  .conv-meta{flex:1;min-width:0}
+  .conv-meta .top-row{display:flex;justify-content:space-between;gap:10px}
+  .conv-meta .preview{color:var(--ink-600);font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:720px">
+    <span class="eyebrow">Inbox</span>
+    <h1>Messages</h1>
+    <div class="panel" style="padding:0">
+      {% for conv in conversations %}
+        <a href="{% url 'messaging:conversation' conv.pk %}" class="conv-row">
+          {% if conv.unread %}<span class="unread-dot"></span>{% else %}<span style="width:10px"></span>{% endif %}
+          <div class="agent-avatar" style="width:42px;height:42px;font-size:1rem">
+            {% if conv.tenant == request.user %}{{ conv.agent.business_name|first|upper }}{% else %}{{ conv.tenant.username|first|upper }}{% endif %}
+          </div>
+          <div class="conv-meta">
+            <div class="top-row">
+              <strong>{% if conv.tenant == request.user %}{{ conv.agent.business_name }}{% else %}{{ conv.tenant.username }}{% endif %}</strong>
+              <span style="font-size:.78rem;color:var(--ink-400)">{{ conv.updated_at|naturaltime }}</span>
+            </div>
+            {% if conv.property %}<div style="font-size:.8rem;color:var(--ink-400)">Re: {{ conv.property.title }}</div>{% endif %}
+            {% if conv.last_message %}<div class="preview">{{ conv.last_message.text }}</div>{% endif %}
+          </div>
+        </a>
+      {% empty %}
+        <div class="empty-state" style="border:none">
+          <h3>No messages yet</h3>
+          <p>Message an agent from any listing page to start a conversation.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
