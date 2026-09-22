@@ -21,8 +21,8 @@
         <div class="label">Uploaded today ({{ profile.get_plan_display }})</div>
       </div>
       <div class="stat reveal">
-        <div class="num">{% if profile.is_verified %}✔ Verified{% else %}Pending{% endif %}</div>
-        <div class="label">Verification status</div>
+        <div class="num">{{ profile.active_listing_count }}</div>
+        <div class="label">Active listings</div>
       </div>
       <div class="stat reveal">
         <div class="num">{% if profile.average_rating %}★ {{ profile.average_rating }}{% else %}—{% endif %}</div>
@@ -37,7 +37,7 @@
         <table class="dash">
           <thead>
             <tr>
-              <th>Title</th><th>Area</th><th>Price</th><th>Status</th><th>Verified</th><th>Featured</th><th>Views</th><th>Actions</th>
+              <th>Title</th><th>Area</th><th>Price</th><th>Status</th><th>Featured</th><th>Views</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -47,7 +47,6 @@
                 <td>{{ property.area }}</td>
                 <td>₦{{ property.price|intcomma }}</td>
                 <td>{% if property.is_available %}<span class="badge badge-verified">Available</span>{% else %}<span class="badge badge-unverified">Hidden</span>{% endif %}</td>
-                <td>{% if property.is_verified %}✔{% else %}—{% endif %}</td>
                 <td>{% if property.is_featured %}★{% else %}—{% endif %}</td>
                 <td>{{ property.views_count }}</td>
                 <td style="display:flex;gap:6px">

@@ -9,7 +9,7 @@
       <div style="flex:1">
         <h1 style="margin:0">{{ profile.business_name }}</h1>
         <p style="color:var(--ink-600);margin:6px 0">
-          {% if profile.is_verified %}<span class="badge badge-verified">✔ Verified agent</span>{% else %}<span class="badge badge-unverified">Unverified</span>{% endif %}
+          <span class="pill">{{ profile.get_account_type_display }}</span>
           {% if profile.average_rating %}<span class="pill" style="margin-left:8px">★ {{ profile.average_rating }} ({{ profile.review_count }} review{{ profile.review_count|pluralize }})</span>{% endif %}
         </p>
         {% if profile.bio %}<p style="color:var(--ink-600)">{{ profile.bio }}</p>{% endif %}

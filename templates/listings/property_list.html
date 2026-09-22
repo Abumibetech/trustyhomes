@@ -52,10 +52,6 @@
             <label>Max budget (₦)</label>
             {{ form.max_budget }}
           </div>
-          <div class="form-row form-check">
-            {{ form.verified_only }}
-            <label style="margin:0" for="{{ form.verified_only.id_for_label }}">Verified listings only</label>
-          </div>
           <button type="submit" class="btn btn-primary btn-block">Apply filters</button>
           <a href="{% url 'listings:property_list' %}" class="btn btn-ghost btn-block" style="margin-top:8px">Clear</a>
         </form>

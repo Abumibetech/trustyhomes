@@ -13,7 +13,7 @@ services:
       - key: ALLOWED_HOSTS
         value: ".onrender.com"
       - key: SITE_WHATSAPP_NUMBER
-        value: "+2349061160177"
+        value: "2348000000000"
       - key: DATABASE_URL
         fromDatabase:
           name: trustyhomes-db

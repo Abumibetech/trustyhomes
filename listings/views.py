@@ -47,8 +47,6 @@ def property_list(request):
             properties = properties.filter(price__gte=data["min_budget"])
         if data.get("max_budget") is not None:
             properties = properties.filter(price__lte=data["max_budget"])
-        if data.get("verified_only"):
-            properties = properties.filter(is_verified=True)
 
     favourite_ids = set()
     if request.user.is_authenticated:

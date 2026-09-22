@@ -201,7 +201,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # WhatsApp business number shown in the footer / contact links, and where
 # agents reach the TrustyHomes team to request a plan upgrade or a featured
 # listing while the platform is free during launch.
-SITE_WHATSAPP_NUMBER = os.environ.get("SITE_WHATSAPP_NUMBER", "+2349061160177")
+SITE_WHATSAPP_NUMBER = os.environ.get("SITE_WHATSAPP_NUMBER", "2348000000000")
 SITE_NAME = "TrustyHomes"
 
 # Informational only for now (shown on the pricing/upgrade page) — everything

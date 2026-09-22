@@ -23,7 +23,6 @@ class PropertySearchForm(forms.Form):
     )
     min_budget = forms.DecimalField(required=False, min_value=0, label="Min budget (₦)")
     max_budget = forms.DecimalField(required=False, min_value=0, label="Max budget (₦)")
-    verified_only = forms.BooleanField(required=False, label="Verified listings only")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

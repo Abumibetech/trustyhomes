@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}TrustyHomes — Verified houses, rooms & agents in Nigeria{% endblock %}</title>
-<meta name="description" content="Find verified houses, rooms and agents around you. TrustyHomes connects renters directly with verified agents and property owners across Nigeria.">
+<meta name="description" content="Find houses, land, offices, shops and more across Nigeria. TrustyHomes connects you directly with the agent or owner behind every listing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -114,6 +114,7 @@
   .hero::before{width:340px;height:340px;top:-120px;right:-80px}
   .hero::after{width:220px;height:220px;bottom:-90px;right:220px;animation-delay:1.5s}
   @keyframes floatShape{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+  @media (max-width:640px){ .hero::before,.hero::after{animation:none} }
   .hero-inner{position:relative;z-index:1}
   .hero h1{font-size:2.4rem;line-height:1.15;margin:0 0 14px;max-width:680px}
   .hero p.lead{font-size:1.05rem;color:#d7ece2;max-width:560px;margin:0 0 28px}
@@ -243,12 +244,24 @@
   }
 
   /* ---------- Animations ---------- */
-  .reveal{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
+  .reveal{opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease}
   .reveal.in-view{opacity:1;transform:translateY(0)}
   .fade-in{animation:fadeIn .4s ease both}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   .pulse-badge{animation:pulseBadge 1.8s ease infinite}
   @keyframes pulseBadge{0%,100%{box-shadow:0 0 0 0 rgba(24,165,102,.4)}50%{box-shadow:0 0 0 6px rgba(24,165,102,0)}}
+
+  /* On small screens, a whole single column of cards animating up one after
+     another can feel jumpy/shaky rather than polished — keep content
+     simply visible there instead. */
+  @media (max-width:640px){
+    .reveal{opacity:1;transform:none;transition:none}
+  }
+  /* Respect the OS-level "reduce motion" accessibility setting. */
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .hero::before,.hero::after{animation:none}
+  }
 
   /* ---------- Notification bell ---------- */
   .icon-btn{
@@ -369,7 +382,7 @@
     <div class="footer-grid">
       <div>
         <h4 class="font-brand">🏠 TrustyHomes</h4>
-        <p style="max-width:280px">Find verified houses, rooms and agents around you — built for trust, not just listings.</p>
+        <p style="max-width:280px">Find houses, land, offices, shops and more — connect directly with the agent or owner behind every listing.</p>
       </div>
       <div>
         <h4>Explore</h4>
